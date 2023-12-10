@@ -167,7 +167,7 @@ object Settings : DataStorePreferences(null) {
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
     var displayName by stringOrNullPref("display_name", null)
     var avatar by stringOrNullPref("avatar", null)
-    var dohUrl by stringPref("doh_url", "https://1.1.1.1/dns-query")
+    var dohUrl by stringPref("doh_url", "https://1.0.0.1/dns-query")
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastDawnDay by longPref("last_dawn_day", 0)
     var lastUpdateDay by longPref("last_update_day", 0)
