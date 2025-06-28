@@ -1,3 +1,7 @@
+Archived, see https://github.com/UjuiUjuMandan/EhViewer/issues/118#issuecomment-2663616488
+
+---
+
 FooIbar/EhViewer的分叉。
 
 变更：
