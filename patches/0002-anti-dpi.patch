@@ -84,16 +84,19 @@ new file mode 100644
 index 000000000..35245835d
 --- /dev/null
 +++ b/app/src/main/kotlin/com/hippo/ehviewer/client/EhDns.kt
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,111 @@
 +package com.hippo.ehviewer.client
 +
 +import com.ehviewer.core.util.isAtLeastQ
 +import com.hippo.ehviewer.builtInHosts
++import java.io.File
 +import java.net.Inet4Address
 +import java.net.InetAddress
 +import okhttp3.AsyncDns
++import okhttp3.Cache
 +import okhttp3.Dns
 +import okhttp3.HttpUrl.Companion.toHttpUrl
++import okhttp3.OkHttpClient
 +import okhttp3.android.AndroidAsyncDns
 +import okhttp3.dnsoverhttps.DnsOverHttps
 +
@@ -160,8 +163,11 @@ index 000000000..35245835d
 +    val selectedUrl = randomizedUrls.firstOrNull()
 +    return selectedUrl ?: throw IllegalStateException("No DoH URLs available")
 +}
++val appCache = Cache(File("cacheDir", "okhttpcache"), 10 * 1024 * 1024)
++val bootstrapClient = OkHttpClient.Builder().cache(appCache).build()
 +
 +private fun buildDoHDNS(url: String): DnsOverHttps = DnsOverHttps.Builder().apply {
++    client(bootstrapClient)
 +    url(url.toHttpUrl())
 +    post(true)
 +    systemDns(systemDns)
