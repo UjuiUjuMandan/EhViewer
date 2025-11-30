@@ -1,1 +1,0 @@
-sed -i '/okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }/a\okhttp-dnsoverhttps = { module = "com.squareup.okhttp3:okhttp-dnsoverhttps", version.ref = "okhttp"}' gradle/libs.versions.toml
