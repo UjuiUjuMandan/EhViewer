@@ -1,0 +1,1 @@
+This is a fork of FooIbar/EhViewer with censorship circumvention
