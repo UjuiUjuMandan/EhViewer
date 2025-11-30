@@ -2,7 +2,7 @@ FooIbar/EhViewer的分叉。
 
 变更：
 
-- 恢复内置 Hosts、域前置和 DoH (https://github.com/FooIbar/EhViewer/issues/12#issuecomment-1713695222)
+- 恢复内置 Hosts 和域前置(https://github.com/FooIbar/EhViewer/issues/12#issuecomment-1713695222)
 
 ## 下载
 
