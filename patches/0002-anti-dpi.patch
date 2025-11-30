@@ -195,7 +195,7 @@ new file mode 100644
 index 000000000..f17c22544
 --- /dev/null
 +++ b/app/src/main/kotlin/com/hippo/ehviewer/client/EhSSLSocketFactory.kt
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,41 @@
 +package com.hippo.ehviewer.client
 +
 +import android.util.Log
@@ -225,10 +225,9 @@ index 000000000..f17c22544
 +    override fun createSocket(host: InetAddress, port: Int): Socket = sslSocketFactory.createSocket(host, port)
 +    override fun createSocket(address: InetAddress, port: Int, localAddress: InetAddress, localPort: Int): Socket = sslSocketFactory.createSocket(address, port, localAddress, localPort)
 +
-+    private fun resolveHost(socket: Socket, host: String): String =
-+        socket.inetAddress.hostAddress.takeIf {
-+            host in dFEnabledDomains || EXCEPTIONAL_DOMAIN in host
-+        } ?: host
++    private fun resolveHost(socket: Socket, host: String): String = socket.inetAddress.hostAddress.takeIf {
++        host in dFEnabledDomains || EXCEPTIONAL_DOMAIN in host
++    } ?: host
 +}
 +
 +fun OkHttpClient.Builder.install(sslSocketFactory: SSLSocketFactory) = apply {
@@ -238,19 +237,6 @@ index 000000000..f17c22544
 +    val trustManager = manager.filterIsInstance<X509TrustManager>().first()
 +    sslSocketFactory(sslSocketFactory, trustManager)
 +}
-diff --git a/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt b/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt
-index 613b0125d..24bd30166 100644
---- a/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt
-+++ b/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt
-@@ -3,6 +3,8 @@ package com.hippo.ehviewer.ktor
- import com.ehviewer.core.network.EhCookieStore
- import com.hippo.ehviewer.BuildConfig
- import com.hippo.ehviewer.Settings
-+import com.hippo.ehviewer.client.EhDns
-+import com.hippo.ehviewer.client.EhSSLSocketFactory
- import io.ktor.client.HttpClientConfig
- import io.ktor.client.engine.HttpClientEngineConfig
- import io.ktor.client.plugins.HttpTimeout
 diff --git a/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt b/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt
 index a13cc9003..c698df3e7 100644
 --- a/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt
@@ -275,11 +261,3 @@ index a13cc9003..c698df3e7 100644
 +        install(EhSSLSocketFactory)
      }
  }
-diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
-index 624039c0d..1163ac58f 100644
---- a/gradle/libs.versions.toml
-+++ b/gradle/libs.versions.toml
-@@ -102,2 +102,3 @@ kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "
- okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
-+okhttp-dnsoverhttps = { module = "com.squareup.okhttp3:okhttp-dnsoverhttps", version.ref = "okhttp"}
- ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
