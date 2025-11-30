@@ -60,15 +60,6 @@ index 000000000..0bc01d901
 +        "185.199.111.133" blockedInCN false
 +    }
 +}
-diff --git a/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt b/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt
-index 9766d6a2e..70d1166d4 100644
---- a/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt
-+++ b/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt
-@@ -112,3 +112,3 @@ object Settings : DataStorePreferences(null) {
-     val readCacheSize = intPref("read_cache_size_2", 640)
--    val enableCronet = boolPref("enable_cronet", true)
-+    val enableCronet = boolPref("enable_cronet", false)
-     val enableQuic = boolPref("enable_quic", true)
 diff --git a/app/src/main/kotlin/com/hippo/ehviewer/client/EhDns.kt b/app/src/main/kotlin/com/hippo/ehviewer/client/EhDns.kt
 new file mode 100644
 index 000000000..3ce78c5de
