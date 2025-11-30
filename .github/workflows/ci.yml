@@ -22,6 +22,7 @@ jobs:
           pushd EhViewer
           bash ../patches/apply.sh
           mv * ../
+          mv .editorconfig ../
           popd
 
       - name: Setup Java
