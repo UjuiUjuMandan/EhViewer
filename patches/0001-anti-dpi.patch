@@ -1,0 +1,285 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index b6bfac878..2e82323f5 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -213,3 +213,5 @@ dependencies {
+     implementation(platform(libs.okhttp.bom))
+ 
++    implementation(libs.okhttp.dnsoverhttps)
++
+     implementation(libs.logcat)
+diff --git a/app/src/main/kotlin/com/hippo/ehviewer/EhHostsConfig.kt b/app/src/main/kotlin/com/hippo/ehviewer/EhHostsConfig.kt
+new file mode 100644
+index 000000000..0bc01d901
+--- /dev/null
++++ b/app/src/main/kotlin/com/hippo/ehviewer/EhHostsConfig.kt
+@@ -0,0 +1,56 @@
++package com.hippo.ehviewer
++
++import com.hippo.ehviewer.client.hosts
++import com.hippo.ehviewer.client.hostsDsl
++
++val builtInHosts = hostsDsl {
++    hosts("exhentai.org") {
++        "178.175.128.251" blockedInCN false
++        "178.175.128.252" blockedInCN false
++        "178.175.128.253" blockedInCN false
++        "178.175.128.254" blockedInCN false
++        "178.175.129.251" blockedInCN false
++        "178.175.129.252" blockedInCN false
++        "178.175.129.253" blockedInCN false
++        "178.175.129.254" blockedInCN false
++        "178.175.132.19" blockedInCN false
++        "178.175.132.20" blockedInCN false
++        "178.175.132.21" blockedInCN false
++        "178.175.132.22" blockedInCN false
++    }
++    hosts("api.github.com") {
++        "140.82.114.5" blockedInCN false
++        "140.82.114.6" blockedInCN false
++        "140.82.116.5" blockedInCN false
++        "140.82.116.6" blockedInCN false
++        "140.82.121.5" blockedInCN true
++        "140.82.121.6" blockedInCN true
++        "20.200.245.245" blockedInCN false
++        "20.201.28.148" blockedInCN false
++        "20.205.243.168" blockedInCN false
++        "20.26.156.210" blockedInCN false
++        "20.27.177.116" blockedInCN false
++        "20.87.245.6" blockedInCN false
++        "4.237.22.34" blockedInCN false
++    }
++    hosts("github.com") {
++        "140.82.113.4" blockedInCN false
++        "140.82.114.3" blockedInCN false
++        "140.82.116.4" blockedInCN false
++        "140.82.121.3" blockedInCN true
++        "140.82.121.4" blockedInCN true
++        "20.200.245.247" blockedInCN false
++        "20.201.28.151" blockedInCN false
++        "20.205.243.166" blockedInCN false
++        "20.26.156.215" blockedInCN false
++        "20.27.177.113" blockedInCN false
++        "20.87.245.0" blockedInCN false
++        "4.237.22.38" blockedInCN false
++    }
++    hosts("raw.githubusercontent.com") {
++        "185.199.108.133" blockedInCN false
++        "185.199.109.133" blockedInCN false
++        "185.199.110.133" blockedInCN false
++        "185.199.111.133" blockedInCN false
++    }
++}
+diff --git a/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt b/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt
+index 5f1cc4487..013f815de 100644
+--- a/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt
++++ b/app/src/main/kotlin/com/hippo/ehviewer/Settings.kt
+@@ -112,3 +112,3 @@ object Settings : DataStorePreferences(null) {
+     val readCacheSize = intPref("read_cache_size_2", 640)
+-    val enableCronet = boolPref("enable_cronet", true)
++    val enableCronet = boolPref("enable_cronet", false)
+     val enableQuic = boolPref("enable_quic", true)
+diff --git a/app/src/main/kotlin/com/hippo/ehviewer/client/EhDns.kt b/app/src/main/kotlin/com/hippo/ehviewer/client/EhDns.kt
+new file mode 100644
+index 000000000..35245835d
+--- /dev/null
++++ b/app/src/main/kotlin/com/hippo/ehviewer/client/EhDns.kt
+@@ -0,0 +1,105 @@
++package com.hippo.ehviewer.client
++
++import com.ehviewer.core.util.isAtLeastQ
++import com.hippo.ehviewer.builtInHosts
++import java.net.Inet4Address
++import java.net.InetAddress
++import okhttp3.AsyncDns
++import okhttp3.Dns
++import okhttp3.HttpUrl.Companion.toHttpUrl
++import okhttp3.android.AndroidAsyncDns
++import okhttp3.dnsoverhttps.DnsOverHttps
++
++private typealias HostsMap = MutableMap<String, List<InetAddress>>
++
++const val CFSUFFIX = ".cdn.cloudflare.net"
++
++val builtInDoHUrls = listOf(
++    "https://146.112.41.2/dns-query",
++    "https://146.112.41.4/dns-query",
++    "https://146.112.70.70/dns-query",
++    "https://146.112.71.71/dns-query",
++    "https://204.194.232.200/dns-query",
++    "https://130.59.31.248/dns-query",
++    "https://130.59.31.251/dns-query",
++    "https://77.88.8.1/dns-query",
++    "https://77.88.8.2/dns-query",
++    "https://77.88.8.8/dns-query",
++    "https://77.88.8.88/dns-query",
++    "https://odvr.nic.cz/dns-query",
++)
++
++val cloudflaredDomains = listOf(
++    "e-hentai.org",
++    "api.e-hentai.org",
++    "upload.e-hentai.org",
++    "forums.e-hentai.org",
++    "exhentai.org",
++    "s.exhentai.org",
++    "testingcf.jsdelivr.net",
++)
++
++val dFEnabledDomains = listOf(
++    "github.com", "api.github.com",
++    "ehgt.org", "gt0.ehgt.org", "gt1.ehgt.org", "gt2.ehgt.org", "gt3.ehgt.org", "ul.ehgt.org",
++    "e-hentai.org", "api.e-hentai.org", "forums.e-hentai.org", "repo.e-hentai.org", "upload.e-hentai.org",
++    "exhentai.org", "s.exhentai.org",
++)
++
++val dohSkipDomains = listOf(
++    "www.recaptcha.net",
++    "www.gstatic.cn",
++    "www.gstatic.com",
++)
++
++fun hostsDsl(builder: HostsMap.() -> Unit): HostsMap = mutableMapOf<String, List<InetAddress>>().apply(builder)
++
++fun interface HostMapBuilder {
++    infix fun String.blockedInCN(boolean: Boolean)
++}
++
++fun HostsMap.hosts(vararg hosts: String, builder: HostMapBuilder.() -> Unit) = apply {
++    hosts.forEach { host ->
++        fun String.toInetAddress() = InetAddress.getByName(this).let { InetAddress.getByAddress(host, it.address) }
++        mutableListOf<InetAddress>().apply {
++            HostMapBuilder { if (!it) add(toInetAddress()) }.apply(builder)
++            put(host, this)
++        }
++    }
++}
++
++private fun getEffectiveDoHUrl(): String {
++    val randomizedUrls = builtInDoHUrls.shuffled()
++    val selectedUrl = randomizedUrls.firstOrNull()
++    return selectedUrl ?: throw IllegalStateException("No DoH URLs available")
++}
++
++private fun buildDoHDNS(url: String): DnsOverHttps = DnsOverHttps.Builder().apply {
++    url(url.toHttpUrl())
++    post(true)
++    systemDns(systemDns)
++}.build()
++
++private var doh: DnsOverHttps? = getEffectiveDoHUrl().runCatching { buildDoHDNS(this) }.getOrNull()
++
++object EhDoH {
++    fun lookup(hostname: String): List<InetAddress>? = doh?.runCatching { lookup(hostname).takeIf { it.isNotEmpty() } }?.onFailure { it.printStackTrace() }?.getOrNull()
++}
++
++val systemDns = if (isAtLeastQ) AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6) else Dns.SYSTEM
++
++object EhDns : Dns {
++    override fun lookup(hostname: String): List<InetAddress> = when {
++        (hostname in "exhentai.org") ->
++            builtInHosts[hostname] ?: systemDns.lookup("s.exhentai.org$CFSUFFIX")
++        (hostname in cloudflaredDomains) ->
++            EhDoH.lookup(hostname) ?: builtInHosts[hostname] ?: systemDns.lookup("$hostname$CFSUFFIX")
++        (hostname in dohSkipDomains) ->
++            systemDns.lookup(hostname)
++        (EXCEPTIONAL_DOMAIN in hostname) ->
++            (EhDoH.lookup(hostname) ?: systemDns.lookup(hostname))
++                .filterIsInstance<Inet4Address>()
++        else ->
++            EhDoH.lookup(hostname) ?: builtInHosts[hostname] ?: systemDns.lookup(hostname)
++    }.shuffled()
++}
+diff --git a/app/src/main/kotlin/com/hippo/ehviewer/client/EhSSLSocketFactory.kt b/app/src/main/kotlin/com/hippo/ehviewer/client/EhSSLSocketFactory.kt
+new file mode 100644
+index 000000000..f17c22544
+--- /dev/null
++++ b/app/src/main/kotlin/com/hippo/ehviewer/client/EhSSLSocketFactory.kt
+@@ -0,0 +1,42 @@
++package com.hippo.ehviewer.client
++
++import android.util.Log
++import com.hippo.ehviewer.Settings
++import java.net.InetAddress
++import java.net.Socket
++import java.security.KeyStore
++import javax.net.ssl.SSLContext
++import javax.net.ssl.SSLSocket
++import javax.net.ssl.SSLSocketFactory
++import javax.net.ssl.TrustManagerFactory
++import javax.net.ssl.X509TrustManager
++import okhttp3.OkHttpClient
++
++const val EXCEPTIONAL_DOMAIN = "hath.network"
++private val sslSocketFactory: SSLSocketFactory = SSLContext.getInstance("TLS").apply {
++    init(null, null, null)
++}.socketFactory
++
++object EhSSLSocketFactory : SSLSocketFactory() {
++    override fun getDefaultCipherSuites(): Array<String> = sslSocketFactory.defaultCipherSuites
++    override fun getSupportedCipherSuites(): Array<String> = sslSocketFactory.supportedCipherSuites
++    override fun createSocket(s: Socket, host: String, port: Int, autoClose: Boolean): Socket = sslSocketFactory.createSocket(s, resolveHost(s, host), port, autoClose) as SSLSocket
++
++    override fun createSocket(host: String, port: Int): Socket = sslSocketFactory.createSocket(host, port)
++    override fun createSocket(host: String, port: Int, localHost: InetAddress, localPort: Int): Socket = sslSocketFactory.createSocket(host, port, localHost, localPort)
++    override fun createSocket(host: InetAddress, port: Int): Socket = sslSocketFactory.createSocket(host, port)
++    override fun createSocket(address: InetAddress, port: Int, localAddress: InetAddress, localPort: Int): Socket = sslSocketFactory.createSocket(address, port, localAddress, localPort)
++
++    private fun resolveHost(socket: Socket, host: String): String =
++        socket.inetAddress.hostAddress.takeIf {
++            host in dFEnabledDomains || EXCEPTIONAL_DOMAIN in host
++        } ?: host
++}
++
++fun OkHttpClient.Builder.install(sslSocketFactory: SSLSocketFactory) = apply {
++    val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())!!
++    factory.init(null as KeyStore?)
++    val manager = factory.trustManagers!!
++    val trustManager = manager.filterIsInstance<X509TrustManager>().first()
++    sslSocketFactory(sslSocketFactory, trustManager)
++}
+diff --git a/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt b/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt
+index 613b0125d..24bd30166 100644
+--- a/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt
++++ b/app/src/main/kotlin/com/hippo/ehviewer/ktor/Common.kt
+@@ -3,6 +3,8 @@ package com.hippo.ehviewer.ktor
+ import com.ehviewer.core.network.EhCookieStore
+ import com.hippo.ehviewer.BuildConfig
+ import com.hippo.ehviewer.Settings
++import com.hippo.ehviewer.client.EhDns
++import com.hippo.ehviewer.client.EhSSLSocketFactory
+ import io.ktor.client.HttpClientConfig
+ import io.ktor.client.engine.HttpClientEngineConfig
+ import io.ktor.client.plugins.HttpTimeout
+diff --git a/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt b/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt
+index a13cc9003..c698df3e7 100644
+--- a/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt
++++ b/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt
+@@ -1,14 +1,16 @@
+ package com.hippo.ehviewer.ktor
+ 
+ import com.ehviewer.core.util.isAtLeastQ
++import com.hippo.ehviewer.client.EhDns
++import com.hippo.ehviewer.client.EhSSLSocketFactory
++import com.hippo.ehviewer.client.install
+ import io.ktor.client.engine.okhttp.OkHttpConfig
+ import okhttp3.AsyncDns
+ import okhttp3.android.AndroidAsyncDns
+ 
+ fun OkHttpConfig.configureClient() {
+     config {
+-        if (isAtLeastQ) {
+-            dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
+-        }
++        dns(EhDns)
++        install(EhSSLSocketFactory)
+     }
+ }
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index 624039c0d..1163ac58f 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -102,2 +102,3 @@ kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "
+ okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
++okhttp-dnsoverhttps = { module = "com.squareup.okhttp3:okhttp-dnsoverhttps", version.ref = "okhttp"}
+ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
