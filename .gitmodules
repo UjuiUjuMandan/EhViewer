@@ -1,0 +1,3 @@
+[submodule "EhViewer"]
+	path = EhViewer
+	url = https://github.com/FooIbar/EhViewer
