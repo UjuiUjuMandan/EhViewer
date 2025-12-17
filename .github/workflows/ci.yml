@@ -222,8 +222,8 @@ jobs:
       - name: Upload Universal
         uses: actions/upload-artifact@v5
         with:
-          name: default-universal-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-default-universal-release.apk
+          name: marshmallow-universal-${{ github.sha }}
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-universal-release.apk
 
       - name: Upload mapping
         if: always()
