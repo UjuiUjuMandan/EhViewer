@@ -187,10 +187,11 @@ diff --git a/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt b/a
 index a13cc9003..fcb996115 100644
 --- a/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt
 +++ b/app/src/main/kotlin/com/hippo/ehviewer/ktor/OkhttpExtensions.kt
-@@ -1,14 +1,13 @@
+@@ -1,14 +1,16 @@
  package com.hippo.ehviewer.ktor
  
 -import com.ehviewer.core.util.isAtLeastQ
++import com.hippo.ehviewer.Settings
 +import com.hippo.ehviewer.client.EhDns
 +import com.hippo.ehviewer.client.EhSSLSocketFactory
 +import com.hippo.ehviewer.client.install
@@ -202,8 +203,9 @@ index a13cc9003..fcb996115 100644
      config {
 -        if (isAtLeastQ) {
 -            dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
--        }
 +        dns(EhDns)
-+        install(EhSSLSocketFactory)
++        if (!Settings.enableQuic.value) {
++            install(EhSSLSocketFactory)
+         }
      }
  }
