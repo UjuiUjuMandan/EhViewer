@@ -65,7 +65,7 @@ new file mode 100644
 index 000000000..3ce78c5de
 --- /dev/null
 +++ b/app/src/main/kotlin/com/hippo/ehviewer/client/EhDns.kt
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,67 @@
 +package com.hippo.ehviewer.client
 +
 +import com.ehviewer.core.util.isAtLeastQ
@@ -129,9 +129,6 @@ index 000000000..3ce78c5de
 +            builtInHosts[hostname] ?: systemDns.lookup("$hostname$CFSUFFIX")
 +        (hostname in dohSkipDomains) ->
 +            systemDns.lookup(hostname)
-+        (EXCEPTIONAL_DOMAIN in hostname) ->
-+            (systemDns.lookup(hostname))
-+                .filterIsInstance<Inet4Address>()
 +        else ->
 +            builtInHosts[hostname] ?: systemDns.lookup(hostname)
 +    }.shuffled()
