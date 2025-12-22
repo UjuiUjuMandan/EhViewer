@@ -3,13 +3,16 @@ new file mode 100644
 index 000000000..0bc01d901
 --- /dev/null
 +++ b/app/src/main/kotlin/com/hippo/ehviewer/EhHostsConfig.kt
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,59 @@
 +package com.hippo.ehviewer
 +
 +import com.hippo.ehviewer.client.hosts
 +import com.hippo.ehviewer.client.hostsDsl
 +
 +val builtInHosts = hostsDsl {
++    hosts("forums.e-hentai.org") {
++        "94.100.18.243" blockedInCN false
++    }
 +    hosts("exhentai.org") {
 +        "178.175.128.251" blockedInCN false
 +        "178.175.128.252" blockedInCN false
