@@ -45,12 +45,6 @@ jobs:
         with:
           workspaces: "./app/src/main/rust"
 
-      - name: CMake Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: app/.cxx
-          key: cmake-
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
         with:
