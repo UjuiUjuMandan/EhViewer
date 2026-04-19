@@ -32,7 +32,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup target add armv7-linux-androideabi
+        run: rustup target add thumbv7neon-linux-androideabi
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -49,7 +49,7 @@ jobs:
         run: cargo clippy --target aarch64-linux-android --all-features -- -D warnings
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-read-only: true
 
@@ -85,7 +85,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup target add armv7-linux-androideabi
+        run: rustup target add thumbv7neon-linux-androideabi
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -95,7 +95,7 @@ jobs:
           save-if: "false"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
 
@@ -107,38 +107,32 @@ jobs:
         run: ./gradlew assembleDefaultRelease
 
       - name: Upload ARM64
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: default-arm64-v8a-${{ github.sha }}
           path: app/build/outputs/apk/default/release/app-default-arm64-v8a-release.apk
 
       - name: Upload x86_64
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: default-x86_64-${{ github.sha }}
           path: app/build/outputs/apk/default/release/app-default-x86_64-release.apk
 
       - name: Upload ARM32
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: default-armeabi-v7a-${{ github.sha }}
           path: app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk
 
-      - name: Upload Universal
-        uses: actions/upload-artifact@v5
-        with:
-          name: default-universal-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-default-universal-release.apk
-
       - name: Upload mapping
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: default-mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/defaultRelease
+          path: app/build/outputs/mapping/defaultRelease/*.txt
 
       - name: Upload native debug symbols
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: default-native-debug-symbols-${{ github.sha }}
           path: app/build/outputs/native-debug-symbols/defaultRelease/native-debug-symbols.zip
@@ -166,7 +160,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup target add armv7-linux-androideabi
+        run: rustup target add thumbv7neon-linux-androideabi
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -176,7 +170,7 @@ jobs:
           save-if: "false"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
 
@@ -188,38 +182,32 @@ jobs:
         run: ./gradlew assembleMarshmallowRelease
 
       - name: Upload ARM64
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: marshmallow-arm64-v8a-${{ github.sha }}
           path: app/build/outputs/apk/marshmallow/release/app-marshmallow-arm64-v8a-release.apk
 
       - name: Upload x86_64
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: marshmallow-x86_64-${{ github.sha }}
           path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86_64-release.apk
 
       - name: Upload ARM32
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: marshmallow-armeabi-v7a-${{ github.sha }}
           path: app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk
 
-      - name: Upload Universal
-        uses: actions/upload-artifact@v5
-        with:
-          name: marshmallow-universal-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-universal-release.apk
-
       - name: Upload mapping
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: marshmallow-mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/marshmallowRelease
+          path: app/build/outputs/mapping/marshmallowRelease/*.txt
 
       - name: Upload native debug symbols
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: marshmallow-native-debug-symbols-${{ github.sha }}
           path: app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip

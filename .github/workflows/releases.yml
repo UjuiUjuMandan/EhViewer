@@ -38,7 +38,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup target add armv7-linux-androideabi
+        run: rustup target add thumbv7neon-linux-androideabi
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -46,7 +46,7 @@ jobs:
           workspaces: "./app/src/main/rust"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
           cache-read-only: true
@@ -84,7 +84,7 @@ jobs:
           mv app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip EhViewer-${{ github.ref_name }}-marshmallow-native-debug-symbols.zip
 
       - name: Releases
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body: Bump Version
           files: |
