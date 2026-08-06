@@ -99,10 +99,6 @@ jobs:
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
 
-      # https://github.com/mikepenz/AboutLibraries/issues/1225
-      - name: Generate aboutlibraries.json
-        run: ./gradlew :app:prepareLibraryDefinitionsDefaultRelease --rerun
-
       - name: Build
         run: ./gradlew assembleDefaultRelease
 
@@ -173,10 +169,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
-
-      # https://github.com/mikepenz/AboutLibraries/issues/1225
-      - name: Generate aboutlibraries.json
-        run: ./gradlew :app:prepareLibraryDefinitionsMarshmallowRelease --rerun
 
       - name: Build
         run: ./gradlew assembleMarshmallowRelease
